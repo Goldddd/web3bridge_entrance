@@ -6,50 +6,56 @@ let submissionForm = document.getElementById("submissionForm");
 submissionForm.addEventListener("submit", function (e) {
 	e.preventDefault();
 
-	let name = submissionForm.name.value;
-	let id = submissionForm.id.value;
-	let steps = Number(submissionForm.steps.value);
-	let iteration = Number(submissionForm.iteration.value);
+	try {
+		let name = submissionForm.name.value;
+		let id = submissionForm.id.value;
+		let steps = Number(submissionForm.steps.value);
+		let iteration = Number(submissionForm.iteration.value);
 
-	let participant = getParticipant(id);
-	if (!participant) {
-		const newParticipant = {
-			name,
-			id,
-			currentSteps: steps,
-			currentIteration: iteration,
-		};
+		let participant = getParticipant(id);
+		if (!participant) {
+			const newParticipant = {
+				name,
+				id,
+				currentSteps: steps,
+				currentIteration: iteration,
+			};
 
-		if (participants.length < 20) {
-			participants.push(newParticipant);
-		} else {
-			// throw error
-		}
-		updateLeaderBoard();
-	} else {
-		let currentSteps = participant.currentSteps;
-		// let totalSteps = (participant.currentSteps += steps);
-
-		if (iteration <= participant.currentIteration) {
-			// throw error
-		} else if (iteration > participant.currentIteration + 2) {
-			// throw error;
-		} else {
-			// validate new iteration step
-			let lowerlimit = participant.currentSteps * 2;
-			let upperlimit = participant.currentSteps * 3;
-
-			if (steps < lowerlimit && steps > upperlimit) {
-				// throw error
+			if (participants.length < 20) {
+				participants.push(newParticipant);
 			} else {
-				participant.currentIteration + 1;
+				setTimeout(
+					showErrorMessage("Maximum number of participants reached"),
+					3000
+				);
 			}
-			participant.currentSteps += steps;
+
+			// updateParticipant(participant);
+		} else {
+			let currentSteps = participant.currentSteps;
+			// let totalSteps = (participant.currentSteps += steps);
+
+			if (iteration <= participant.currentIteration) {
+				setTimeout(showErrorMessage("Invalid Iteraction Selected"), 3000);
+			} else if (iteration > participant.currentIteration + 2) {
+				setTimeout(showErrorMessage("Invalid Iteration Selected"), 3000);
+			} else {
+				// validate new iteration step
+				let lowerlimit = participant.currentSteps * 2;
+				let upperlimit = participant.currentSteps * 3;
+
+				if (steps < lowerlimit && steps > upperlimit) {
+					setTimeout(showErrorMessage("Invalid Step Value"), 3000);
+				} else {
+					participant.currentIteration + 1;
+				}
+				participant.currentSteps += steps;
+			}
 		}
-
-
-		updateParticipant(participant);
 		updateLeaderBoard();
+		updateParticipants();
+	} catch (e) {
+		setTimeout(showErrorMessage(e), 3000);
 	}
 });
 
@@ -77,8 +83,6 @@ function updateLeaderBoard() {
 	leaderboard = participants.sort(function (a, b) {
 		return b.currentSteps - a.currentSteps;
 	});
-
-	console.log(leaderboard);
 
 	let records = "";
 
@@ -110,7 +114,6 @@ function updateParticipants() {
 		if (i < 10) {
 			let row = `
 				<tr>
-					<td>${i + 1}</td>
 					<td>${participantsList[i].id}</td>
 					<td>${participantsList[i].name}</td>
 					<td>${participantsList[i].currentSteps}</td>
@@ -121,7 +124,10 @@ function updateParticipants() {
 		}
 	}
 
-	console.log(records);
+	document.getElementById("participantsList").innerHTML = records;
+}
 
-	document.getElementById("participantsListList").innerHTML = records;
+function showErrorMessage(message) {
+	document.getElementById("errorMessage").innerHTML = message;
+	document.getElementById("errorMessageDiv").style.display = "block";
 }
